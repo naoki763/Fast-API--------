@@ -6,17 +6,17 @@ import requests
 import pandas as pd
 
 
-page = st.sidebar.selectbox('Choose your page!',['ユーザ登録', '会議室登録', '会議室予約'])
+page = st.sidebar.selectbox('Choose your page!',['利用者登録', '会議室登録', '会議室予約'])
 
-if page=='ユーザ登録':
-    st.title('ユーザ登録画面')
+if page=='利用者登録':
+    st.title('利用者登録画面')
 
     with st.form('users'):
-        user_name: str = st.text_input('ユーザ名',max_chars=12)
+        user_name: str = st.text_input('利用者名',max_chars=12)
         data = {
             'user_name':user_name
         }
-        submit_button = st.form_submit_button(label='ユーザ登録')
+        submit_button = st.form_submit_button(label='利用者登録')
 
     if submit_button:
         url = 'http://127.0.0.1:8000/users'
@@ -25,21 +25,21 @@ if page=='ユーザ登録':
             data=json.dumps(data)
         )
         if res.status_code == 200:
-            st.success('ユーザ登録完了')
+            st.success('利用者登録完了')
         st.write(res.status_code)
         st.json(res.json())
 
 elif page=='会議室登録':
-    st.title('部屋登録画面')
+    st.title('会議室登録画面')
     with st.form('rooms'):
         # room_id:int = random.randint(0, 10)
-        room_name: str = st.text_input('部屋名',max_chars=12)
+        room_name: str = st.text_input('会議室名',max_chars=12)
         capacity: int = st.number_input('定員数', step=1)
         data = {
             'room_name': room_name,
             'capacity': capacity
         }
-        submit_button = st.form_submit_button(label='部屋登録')
+        submit_button = st.form_submit_button(label='会議室登録')
 
     if submit_button:
         url = 'http://127.0.0.1:8000/rooms'
@@ -48,24 +48,24 @@ elif page=='会議室登録':
             data=json.dumps(data)
         )
         if res.status_code == 200:
-            st.success('部屋登録完了')
+            st.success('会議室登録完了')
         
         st.json(res.json())
 
 elif page=='会議室予約':
-    st.title('部屋予約画面')
+    st.title('会議室予約画面')
     
-    # ユーザ一覧を取得する。
+    # 利用者一覧を取得する。
     url_users = 'http://127.0.0.1:8000/users'
     res = requests.get(url_users)
     users = res.json()
-    # ユーザ名をキーとして、ユーザIDをバリューに設定
+    # 利用者名をキーとして、利用者IDをバリューに設定
     users_name = {}
     for user in users:
         users_name[user['user_name']] = user['user_id']
     
-    # 部屋一覧取得
-    st.write('## 部屋一覧')
+    # 会議室一覧取得
+    st.write('## 会議室一覧')
     url_rooms = 'http://127.0.0.1:8000/rooms'
     res = requests.get(url_rooms)
     rooms = res.json()
@@ -76,7 +76,7 @@ elif page=='会議室予約':
             'capacity': room['capacity']
         }
     df_rooms = pd.DataFrame(rooms)
-    df_rooms.columns = ['会議室名', '定員', '部屋ID']
+    df_rooms.columns = ['会議室名', '定員', '会議室ID']
     st.table(df_rooms)
     
     # 予約一覧取得
@@ -116,7 +116,7 @@ elif page=='会議室予約':
         
         df_bookings = df_bookings.rename(columns={
             'user_id': '予約者名',
-            'room_id': '部屋名',
+            'room_id': '会議室名',
             'booked_num': '予約人数',
             'start_datetime': '開始時刻',
             'end_datetime': '終了時刻',
@@ -126,13 +126,13 @@ elif page=='会議室予約':
         st.table(df_bookings)
     
     else:
-        st.write('現在、予約されている部屋はございません。')    
+        st.write('現在、予約されている会議室はございません。')    
     
-    st.write('## 部屋予約フォーム')
+    st.write('## 会議室予約フォーム')
     with st.form('booking'):
         # booking_id:int = random.randint(0, 10)
         user_name: str = st.selectbox('予約者名',users_name.keys())
-        room_name: str = st.selectbox('部屋名', rooms_name.keys())
+        room_name: str = st.selectbox('会議室名', rooms_name.keys())
         booked_num: int = st.number_input('予約人数',step=1, min_value=1)
         date = st.date_input('日付の入力', min_value=datetime.date.today())
         start_time = st.time_input('チェックイン時間: ', value=datetime.time(hour=9, minute=0))
@@ -175,7 +175,7 @@ elif page=='会議室予約':
             st.error('利用時間は9:00~20:00です。')
             
         else:
-            #部屋予約
+            #会議室予約
             url = 'http://127.0.0.1:8000/booking'
             res = requests.post(
                 url,
